@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+}
+
+group 'eu.thescrewcollab'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir: 'src/main/resources/lib', includes: ['*.jar'])
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar {
+    manifest {
+        attributes (
+            'Class-Path': 'Logger.class Logger$LogLevel.class'
+        )
+    }
+    from {
+        sourceSets.main.collect {
+            it.getAllJava().collect {
+                System.out.println("source:"+it.getPath());
+                return it
+            }
+        }
+    }
+    processResources.exclude("lib")
+    archiveFileName = 'hModLogger.jar'
+}
