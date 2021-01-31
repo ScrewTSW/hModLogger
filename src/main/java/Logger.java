@@ -1,37 +1,33 @@
 public class Logger {
 
-    public static LogLevel LOG_LEVEL = LogLevel.INFO;
+    private static LogLevel LOG_LEVEL = LogLevel.INFO;
     private static String pluginName;
     private static Plugin parent = null;
-    private static Logger logger = null;
+    private static boolean initialized = false;
 
-    private Logger(LogLevel logLevel, Plugin parent) {
-        Logger.LOG_LEVEL = logLevel;
-        if (parent == null) {
-            Logger.pluginName = "[Logger]";
-        } else {
-            Logger.parent = parent;
-            Logger.pluginName = "[" + Logger.parent.getName() + "]";
+    public static void init(LogLevel logLevel, Plugin plugin) {
+        if (!Logger.initialized) {
+            if (plugin != null) {
+                Logger.parent = plugin;
+                Logger.pluginName = "[" + Logger.parent.getName() + "]";
+            } else {
+                Logger.pluginName = "[Logger]";
+            }
+            if (logLevel != null) Logger.LOG_LEVEL = logLevel;
+            Logger.initialized = true;
         }
     }
 
-    public static Logger getInstance(LogLevel logLevel, Plugin parent) {
-        if (Logger.logger == null) {
-            Logger.logger = new Logger(logLevel, parent);
-        }
-        return Logger.logger;
+    public static void init(LogLevel logLevel) {
+        init(logLevel, null);
     }
 
-    public static Logger getInstance(LogLevel logLevel) {
-        return getInstance(logLevel, null);
-    }
-
-    public static Logger getInstance() {
-        return getInstance(LogLevel.INFO);
+    public static void init() {
+        init(LogLevel.INFO);
     }
 
     public static void error(String str) {
-        if (Logger.logger == null) Logger.getInstance();
+        if (!Logger.initialized) Logger.init();
         if (Logger.LOG_LEVEL == LogLevel.TRACE ||
                 Logger.LOG_LEVEL == LogLevel.DEBUG ||
                 Logger.LOG_LEVEL == LogLevel.INFO ||
@@ -41,7 +37,7 @@ public class Logger {
     }
 
     public static void warn(String str) {
-        if (Logger.logger == null) Logger.getInstance();
+        if (!Logger.initialized) Logger.init();
         if (Logger.LOG_LEVEL == LogLevel.TRACE ||
                 Logger.LOG_LEVEL == LogLevel.DEBUG ||
                 Logger.LOG_LEVEL == LogLevel.INFO ||
@@ -50,7 +46,7 @@ public class Logger {
     }
 
     public static void info(String str) {
-        if (Logger.logger == null) Logger.getInstance();
+        if (!Logger.initialized) Logger.init();
         if (Logger.LOG_LEVEL == LogLevel.TRACE ||
                 Logger.LOG_LEVEL == LogLevel.DEBUG ||
                 Logger.LOG_LEVEL == LogLevel.INFO)
@@ -58,16 +54,20 @@ public class Logger {
     }
 
     public static void debug(String str) {
-        if (Logger.logger == null) Logger.getInstance();
+        if (!Logger.initialized) Logger.init();
         if (Logger.LOG_LEVEL == LogLevel.TRACE ||
                 Logger.LOG_LEVEL == LogLevel.DEBUG)
         System.out.println(Logger.pluginName + " [DEBUG] " + str);
     }
 
     public static void trace(String str) {
-        if (Logger.logger == null) Logger.getInstance();
+        if (!Logger.initialized) Logger.init();
         if (Logger.LOG_LEVEL == LogLevel.TRACE)
         System.out.println(Logger.pluginName + " [TRACE] " + str);
+    }
+
+    public static LogLevel getLogLevel() {
+        return Logger.LOG_LEVEL;
     }
 
     public enum LogLevel{
@@ -77,7 +77,7 @@ public class Logger {
         DEBUG("DEBUG"),
         TRACE("TRACE");
 
-        private String level;
+        private final String level;
 
         LogLevel(String level) {
             this.level = level;
